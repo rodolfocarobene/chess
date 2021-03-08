@@ -92,6 +92,7 @@ class board{
 		bool IsColoumn(char type);
 		bool GetMated(string color);
 		void CheckMate();
+		void Promote(int colstop);
 };
 
 
@@ -491,10 +492,14 @@ void pawn::update(board * myBoard){
 				if(myBoard -> Occupied(raw+1, col) == false) possiblemoves[raw+1][col] = true;
 			} 
 		}
-		if(myBoard -> GetPiece(raw+1,col+1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw+1,col+1))
-			possiblemoves[raw+1][col+1] = true;
-		if(myBoard -> GetPiece(raw+1,col-1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw+1,col-1))
-			possiblemoves[raw+1][col-1] = true;
+		if(raw + 1 < 8 && col + 1 < 8){
+			if(myBoard -> GetPiece(raw+1,col+1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw+1,col+1))
+				possiblemoves[raw+1][col+1] = true;
+		}
+		if(raw + 1 < 8 && col - 1 >= 0){
+			if(myBoard -> GetPiece(raw+1,col-1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw+1,col-1))
+				possiblemoves[raw+1][col-1] = true;
+		}
 	}
 	if(color == "black"){
 		if(moved==false){
@@ -512,10 +517,14 @@ void pawn::update(board * myBoard){
 				if(myBoard -> Occupied(raw-1, col) == false) possiblemoves[raw-1][col] = true;
 			} 
 		}
-		if(myBoard -> GetPiece(raw-1,col+1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw-1,col+1))
-			possiblemoves[raw-1][col+1] = true;
-		if(myBoard -> GetPiece(raw-1,col-1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw-1,col-1))
-			possiblemoves[raw-1][col-1] = true;
+		if(raw - 1 >= 0 && col + 1 < 8){
+			if(myBoard -> GetPiece(raw-1,col+1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw-1,col+1))
+				possiblemoves[raw-1][col+1] = true;
+		}
+		if(raw - 1 >= 0 && col - 1 >= 0){
+			if(myBoard -> GetPiece(raw-1,col-1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw-1,col-1))
+				possiblemoves[raw-1][col-1] = true;
+		}
 	}
 }
 

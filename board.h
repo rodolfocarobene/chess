@@ -243,6 +243,7 @@ piece * board::piecenew(piece * oldPiece){
 }
 
 void board::Move(string start, string stop){
+	//cout <<  __LINE__ << endl;
 	board * myBoard = this;
 	if(whitechecked == false && blackchecked == false){
 		vector<int> vstart = this -> Convert(start);
@@ -269,6 +270,7 @@ void board::Move(string start, string stop){
 		if(current -> CanMove(rawstop,colstop, myBoard)){
 			if(final -> GetType() != 0){
 				if(curr_color != fin_color){
+					//cout <<  __LINE__ << endl;
 					if(fin_color == "white") whitegrave.push_back(final);
 					if(fin_color == "black") blackgrave.push_back(final);
 					delete thisboard[rawstop][colstop];
@@ -283,6 +285,7 @@ void board::Move(string start, string stop){
 				}
 			}
 			else{
+				//cout <<  __LINE__ << endl;
 				piece * temp_a = thisboard[rawstop][colstop];
 				thisboard[rawstop][colstop] = this -> piecenew(current);
 				thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);
@@ -306,7 +309,14 @@ void board::Move(string start, string stop){
 			//errore
 		}
 
-		
+		//cout <<  __LINE__ << endl;
+		bool ispawn = thisboard[rawstop][colstop] -> GetType() == 5;
+		bool arrived = (rawstop == 7 && currentmove == 0) || (rawstop == 0 && currentmove == 1);
+
+		//cout <<  __LINE__ << endl;
+		if(ispawn && arrived){
+			this -> Promote(colstop);
+		}
 
 		//cambia la mossa corrente
 		if(currentmove == 0 && moved == true) currentmove = 1;
@@ -341,11 +351,43 @@ void board::Move(string start, string stop){
 			return;
 		}
 	}
-
+	//cout <<  __LINE__ << endl;
 	this -> CheckChecks("justcheck");
+	//cout <<  __LINE__ << endl;
+}
+
+void board::Promote(int colstop){
+	string type;
+	cout << "Promote in [Q,N,B,R]: ";
+	cin >> type;
+	piece * newpiece;
+	string color;
+	int raw;
+	if(currentmove == 0){
+		color = "white";
+		raw = 7;
+	}
+	else if(currentmove == 1){
+		color = "black";
+		raw = 0;
+	}
+	if(type == "Q")
+		newpiece = new queen(color,raw,colstop); 
+	else if(type == "N")
+		newpiece = new knight(color,raw,colstop); 
+	else if(type == "B")
+		newpiece = new bishop(color,raw,colstop); 
+	else if(type == "R")
+		newpiece = new rook(color,raw,colstop); 
+	else return;
+
+	delete thisboard[raw][colstop];
+	thisboard[raw][colstop] = newpiece;
+	return;
 }
 
 void board::Move(string unic){
+	//cout <<  __LINE__ << endl;
 	int length = unic.length();
 	if(length == 2){ //d4
 		vector<int> vstop = this -> Convert(unic);
@@ -573,9 +615,7 @@ void board::Move(string unic){
 				return;
 			}
 		}
-	}
-
-	
+	}	
 }
 
 bool board::IsColoumn(char type){
@@ -695,6 +735,8 @@ void board::CheckChecks(string type){
 
 	for(int i = 0; i < 8; i++){
 		for(int j = 0; j < 8; j++){
+			//cout <<  __LINE__ << " " << i << " " << j << endl;
+
 			piece * current = thisboard[i][j];
 			if(current -> GetColor() == "white" && current -> CanMove(blackking[0], blackking[1], this)){
 				blackchecked = true;
