@@ -5,12 +5,13 @@
 #include <vector>
 #include <iostream>
 
-#define INVERTED true	
+#define INVERTED true									//if terminal background is black set this to true
+														//it switches color in print function for right visualisation
 
 
 using namespace std;
 
-
+class game;
 class board;
 class piece;
 class nullpiece;
@@ -21,88 +22,111 @@ class queen;
 class pawn;
 class king;
 
-class piece{
-	protected:
-		int raw;
-		int col;
-		string color;
-		bool alive;
-		bool moved;
-		int type;
-		bool possiblemoves [8][8];
-	public:
-		piece(){};
-		piece(piece * oldPiece);
-		vector<int> GetPos();
-		int GetRaw();
-		int GetCol();
-		bool GetAlive();
-		bool GetMoved();
-		bool SetAlive(bool a);
-		bool SetMoved(bool a);
-		string GetColor();
-		int GetType();
-		void reset();
-		virtual void update(board * myBoard){};
-		void PrintPossible(board * myBoard);
-		bool CanMove(int n_raw, int n_col, board * myBoard);
-		void ChangePos(int n_raw, int n_col);
-		void Print();
-		bool GetPossibleMove(int n_raw, int n_col);
-};
+//------------------------------------------------------
 
-//scacchiera intera, con tutti i pezzi
 class board{
 	private:
-		board * last;
-		piece * thisboard [8][8];
-		vector<int> whiteking;
-		bool whitechecked;
-		bool whitemated;
-		vector<int> blackking;
-		bool blackchecked;
-		bool blackmated;
-		int currentmove;
-		int move;
+		board * last;									//stores the board before a move 
+		piece * thisboard [8][8];						//the board, with all the pieces
+
+		vector<int> whiteking;							//position of white king
+		bool whitechecked;								//is white checked?
+		bool whitemated;								//is white mated?
+
+		vector<int> blackking;							//position of black king
+		bool blackchecked;								//is black checked?
+		bool blackmated;								//is black mated?
+
+		int currentmove;								//can be 0 -> white or 1 -> black
+		int move;										// 1-1-2-2-3-3...
+
 	public:
-		board();
-		board(board * oldBoard);
-		~board();
-		vector<piece*> whitegrave;
-		vector<piece*> blackgrave;
-		void Print();
-		piece * GetPiece(int raw, int col);
-		piece * FindPiece(string pos);
-		vector<int> Convert(string pos);
-		void Move(string start, string stop);
-		void Move(string unic);
-		bool Occupied(int n_raw, int n_col);
-		string Unicode(int type, string color);
-		string ConvertPos(int raw, int col);
-		string GetCurrentMove();
-		int GetCurrentMoveInt();
-		void SetCurrentMoveInt(int a);
-		vector<int> Getwhiteking();
-		bool Getwhitechecked();
-		vector<int> Getblackking();
-		bool Getblackchecked();
-		void ResetChecks();
-		void CheckChecks(string type = "total");
-		void Remember();
-		void Restore();
-		int TypeStringToInt(char types);
-		piece * piecenew(piece * oldPiece);
-		int ColCharToInt(char types);
-		bool IsColoumn(char type);
-		bool GetMated(string color);
-		void CheckMate();
-		void Promote(int colstop);
-		int GetMove();
+		board();										//constructor for a new board with pieces
+		board(board * oldBoard);						//copy constructor
+		~board();										//destructor (delete all pieces etc.)
+
+		vector<piece*> whitegrave;						//grave of white pieces
+		vector<piece*> blackgrave;						//grave of black pieces
+
+		void Print();									//prints the board
+		string Unicode(int type, string color);			//converts type+color in unicode char
+
+		piece * GetPiece(int raw, int col);				//returns piece from raw and column
+		piece * FindPiece(string pos);					//returns piece from position (es: c5)
+
+		vector<int> Convert(string pos);				//converts position to 2 int (raw, column)
+		string ConvertPos(int raw, int col);			//converts raw,column to string
+		int ColCharToInt(char types);					//converts char column (a,b,...,h) to corresponding int index
+		bool IsColoumn(char type);						//checks if a char describes a column or not
+		int TypeStringToInt(char types);				//converts char type to int corresponding
+
+		bool Occupied(int n_raw, int n_col);			//is a position occupied?
+
+		string GetCurrentMove();						//returns a string with move # & color
+		int GetCurrentMoveInt();						//returns 0 || 1 for white & black
+		int GetMove();									//returns move # (1,2,3,4...)
+		void SetCurrentMoveInt(int a);					//set currentmove
+
+		vector<int> Getwhiteking();						//return white king position
+		vector<int> Getblackking();						//return black king position
+
+		bool Getwhitechecked();							//is white checked?
+		bool Getblackchecked();							//is black checked?
+
+		void ResetChecks();								//putss both checked bool to false
+		void CheckChecks(string type = "total");		//checks for checks (with justcheck) or for mate too (with total)
+		void CheckMate();								//checks for mates
+		bool GetMated(string color);					//is color mated?
+
+		void Remember();								//saves current board in last
+		void Restore();									//restor board in last
+
+		piece * piecenew(piece * oldPiece);				//returns a copy of a piece
+		void Promote(int colstop);						//promotes a pawn
+
+		void Move(string start, string stop);			//moves a piece from start position to stop position, in possible
+		void Move(string unic);							//truly just a parser for move in chess format (dxe5), passes all to Move(string,string)
 };
 
+class piece{
+	protected:
+		int raw;										//raw of piece
+		int col;										//col of piece
+		string color;									//color of piece
+		int type;										//type of piece 
+															//rook 		-> 1
+															//kinght	-> 2
+															//bishop 	-> 3
+															//queen 	-> 4
+															//pawn		-> 5
+															//king 		-> 6
+		bool alive;										//is this piece alive?
+		bool moved;										//has this piece moved yet?
+		bool possiblemoves [8][8];						//every piece has a "board" of bool, can it moves in that pos?
+	public:
+		piece(){};										//default constructor (not used)
 
-//pezzo nullo, probabilmente 
-//si può anche togliere con un po' di lavoro
+		vector<int> GetPos();							//retun pos
+		int GetRaw();									//retun raw
+		int GetCol();									//retun col
+		bool GetAlive();								//retun alive status							
+		bool GetMoved();								//retun moved status
+		string GetColor();								//retun color
+		int GetType();									//retun # for type
+
+		bool SetAlive(bool a);							//set alive status
+		bool SetMoved(bool a);							//set moved status
+		void ChangePos(int n_raw, int n_col);			//change both raw and col
+
+		void reset();									//resets possiblemove matrix
+		virtual void update(board * myBoard){};			//update possiblemove matrix
+		void PrintPossible(board * myBoard);			//prints matrix (for debug use)
+		bool GetPossibleMove(int n_raw, int n_col);		//prints a single element of matrix without updating 
+		bool CanMove(int n_raw, int n_col, board * myBoard);	//can this piece move to pos in this board?
+
+		void Print();									//print some info (for debug use)
+};
+
 class nullpiece : public piece{
 	public:
 		nullpiece(int riga, int colonna);
@@ -146,395 +170,35 @@ class king : public piece{
 };
 
 //----------------------------------------------------------------
+//Game Function. Obv not really of the library, but useful
+//----------------------------------------------------------------
+
+void StartGame(){
+	board * currentgame= new board();
+
+	currentgame -> Print();
+
+
+	while(true){
+		cout << currentgame -> GetCurrentMove();
+		string start, end;
+		cin >> start;
+		currentgame -> Move(start);
+		currentgame -> Print();
+		if(currentgame -> GetMated("white")){
+			cout << "Nero vince" << endl;
+			break;
+		}
+		if(currentgame -> GetMated("black")){
+			cout << "Bianco vince" << endl;
+			break;
+		}
+	}
+	delete currentgame;
+}
+
 
 #include "board.h"
 #include "piece.h"
-
-//----------------------------------------------------------------
-
-nullpiece::nullpiece(int riga, int colonna){
-	raw = riga;
-	col = colonna;
-	color = "";
-	type = 0;
-	alive = false;
-	moved = false;
-}
-
-rook::rook(string colore, int riga, int colonna){
-	raw = riga;
-	col = colonna;
-	color = colore;
-	type = 1;
-	alive = true;
-	moved = false;
-}
-
-knight::knight(string colore, int riga, int colonna){
-	raw = riga;
-	col = colonna;
-	color = colore;
-	type = 2;
-	alive = true;
-	moved = false;
-}
-
-bishop::bishop(string colore, int riga, int colonna){
-	raw = riga;
-	col = colonna;
-	color = colore;
-	type = 3;
-	alive = true;
-	moved = false;
-}
-
-queen::queen(string colore, int riga, int colonna){
-	raw = riga;
-	col = colonna;
-	color = colore;
-	type = 4;
-	alive = true;
-	moved = false;
-}
-
-pawn::pawn(string colore, int riga, int colonna){
-	raw = riga;
-	col = colonna;
-	color = colore;
-	type = 5;
-	alive = true;
-	moved = false;
-}
-
-king::king(string colore, int riga, int colonna){
-	raw = riga;
-	col = colonna;
-	color = colore;
-	type = 6;
-	alive = true;
-	moved = false;
-}
-
-//---------------------------------------------------------
-
-void rook::update(board * myBoard){
-	this -> reset();
-	int j = 1;
-	while(col+j<8){
-		if(myBoard -> Occupied(raw,col+j) == false)
-			possiblemoves[raw][col+j] = true;
-		else{
-			if(myBoard -> GetPiece(raw,col+j) -> GetColor() != color){
-				possiblemoves[raw][col+j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(col-j>=0){
-		if(myBoard -> Occupied(raw,col-j) == false)
-			possiblemoves[raw][col-j] = true;
-		else{
-			if(myBoard -> GetPiece(raw,col-j) -> GetColor() != color){
-				possiblemoves[raw][col-j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw+j<8){
-		if(myBoard -> Occupied(raw+j,col) == false)
-			possiblemoves[raw+j][col] = true;
-		else{
-			if(myBoard -> GetPiece(raw+j,col) -> GetColor() != color){
-				possiblemoves[raw+j][col] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw-j>=0){
-		if(myBoard -> Occupied(raw-j,col) == false)
-			possiblemoves[raw-j][col] = true;
-		else{
-			if(myBoard -> GetPiece(raw-j,col) -> GetColor() != color){
-				possiblemoves[raw-j][col] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-}
-
-void knight::update(board * myBoard){
-	this -> reset();
-	possiblemoves[raw][col] = true;
-	if(raw+1<8 && col+2<8) 
-		if(myBoard -> GetPiece(raw+1,col+2) -> GetColor() != color)
-			possiblemoves[raw+1][col+2] = true;
-	if(raw+1<8 && col-2>=0) 
-		if(myBoard -> GetPiece(raw+1,col-2) -> GetColor() != color)
-			possiblemoves[raw+1][col-2] = true;
-	if(raw-1>=0 && col+2<8) 
-		if(myBoard -> GetPiece(raw-1,col+2) -> GetColor() != color)
-			possiblemoves[raw-1][col+2] = true;
-	if(raw-1>=0 && col-2>=0) 
-		if(myBoard -> GetPiece(raw-1,col-2) -> GetColor() != color)
-			possiblemoves[raw-1][col-2] = true;
-
-	if(raw+2<8 && col+1<8) 
-		if(myBoard -> GetPiece(raw+2,col+1) -> GetColor() != color)
-			possiblemoves[raw+2][col+1] = true;
-	if(raw+2<8 && col-1>=0) 
-		if(myBoard -> GetPiece(raw+2,col-1) -> GetColor() != color)
-			possiblemoves[raw+2][col-1] = true;
-	if(raw-2>=0 && col+1<8) 
-		if(myBoard -> GetPiece(raw-2,col+1) -> GetColor() != color)
-			possiblemoves[raw-2][col+1] = true;
-	if(raw-2>=0 && col-1>=0) 
-		if(myBoard -> GetPiece(raw-2,col-1) -> GetColor() != color)
-			possiblemoves[raw-2][col-1] = true;
-}
-
-void bishop::update(board * myBoard){
-	this -> reset();
-	int j = 1;
-	while(raw+j<8 && col+j<8){
-		if(myBoard -> Occupied(raw+j,col+j) == false)
-			possiblemoves[raw+j][col+j] = true;
-		else{
-			if(myBoard -> GetPiece(raw+j,col+j) -> GetColor() != color){
-				possiblemoves[raw+j][col+j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw-j>=0 && col-j>=0){
-		if(myBoard -> Occupied(raw-j,col-j) == false)
-			possiblemoves[raw-j][col-j] = true;
-		else{
-			if(myBoard -> GetPiece(raw-j,col-j) -> GetColor() != color){
-				possiblemoves[raw-j][col-j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw+j<8 && col-j>=0){
-		if(myBoard -> Occupied(raw+j,col-j) == false)
-			possiblemoves[raw+j][col-j] = true;
-		else{
-			if(myBoard -> GetPiece(raw+j,col-j) -> GetColor() != color){
-				possiblemoves[raw+j][col-j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw-j>=0 && col+j<8){
-		if(myBoard -> Occupied(raw-j,col+j) == false)
-			possiblemoves[raw-j][col+j] = true;
-		else{
-			if(myBoard -> GetPiece(raw-j,col+j) -> GetColor() != color){
-				possiblemoves[raw-j][col+j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-}
-
-void queen::update(board * myBoard){
-	this -> reset();
-	int j = 1;
-	while(col+j<8){
-		if(myBoard -> Occupied(raw,col+j) == false)
-			possiblemoves[raw][col+j] = true;
-		else{
-			if(myBoard -> GetPiece(raw,col+j) -> GetColor() != color){
-				possiblemoves[raw][col+j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(col-j>=0){
-		if(myBoard -> Occupied(raw,col-j) == false)
-			possiblemoves[raw][col-j] = true;
-		else{
-			if(myBoard -> GetPiece(raw,col-j) -> GetColor() != color){
-				possiblemoves[raw][col-j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw+j<8){
-		if(myBoard -> Occupied(raw+j,col) == false)
-			possiblemoves[raw+j][col] = true;
-		else{
-			if(myBoard -> GetPiece(raw+j,col) -> GetColor() != color){
-				possiblemoves[raw+j][col] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw-j>=0){
-		if(myBoard -> Occupied(raw-j,col) == false)
-			possiblemoves[raw-j][col] = true;
-		else{
-			if(myBoard -> GetPiece(raw-j,col) -> GetColor() != color){
-				possiblemoves[raw-j][col] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-
-	while(raw+j<8 && col+j<8){
-		if(myBoard -> Occupied(raw+j,col+j) == false)
-			possiblemoves[raw+j][col+j] = true;
-		else{
-			if(myBoard -> GetPiece(raw+j,col+j) -> GetColor() != color){
-				possiblemoves[raw+j][col+j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw-j>=0 && col-j>=0){
-		if(myBoard -> Occupied(raw-j,col-j) == false)
-			possiblemoves[raw-j][col-j] = true;
-		else{
-			if(myBoard -> GetPiece(raw-j,col-j) -> GetColor() != color){
-				possiblemoves[raw-j][col-j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw+j<8 && col-j>=0){
-		if(myBoard -> Occupied(raw+j,col-j) == false)
-			possiblemoves[raw+j][col-j] = true;
-		else{
-			if(myBoard -> GetPiece(raw+j,col-j) -> GetColor() != color){
-				possiblemoves[raw+j][col-j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-	j = 1;
-	while(raw-j>=0 && col+j<8){
-		if(myBoard -> Occupied(raw-j,col+j) == false)
-			possiblemoves[raw-j][col+j] = true;
-		else{
-			if(myBoard -> GetPiece(raw-j,col+j) -> GetColor() != color){
-				possiblemoves[raw-j][col+j] = true;
-				break;
-			}
-			else break;
-		}
-		j++;
-	}
-}
-
-void king::update(board * myBoard){
-	this -> reset();
-	for(int i = -1; i < 2; i++){
-		for(int j = -1; j < 2; j++){
-			bool rawbool = raw+i >= 0 && raw+i < 8;
-			bool colbool = col+j >= 0 && col+j < 8;
-			if(rawbool && colbool) 
-				if(myBoard -> GetPiece(raw+i,col+j) -> GetColor() != color)
-					possiblemoves[raw+i][col+j] = true;
-		}
-	}
-}
-
-void pawn::update(board * myBoard){
-	this -> reset();
-	if(color == "white"){
-		if(moved==false){
-			if(myBoard -> Occupied(raw+1, col) == false){
-				possiblemoves[raw+1][col] = true;
-				if(myBoard -> Occupied(raw+2, col) == false){
-					possiblemoves[raw+2][col] = true;
-				}
-			}
-		}
-		else{
-			if(raw+1 < 8){
-				if(myBoard -> Occupied(raw+1, col) == false) possiblemoves[raw+1][col] = true;
-			} 
-		}
-		if(raw + 1 < 8 && col + 1 < 8){
-			if(myBoard -> GetPiece(raw+1,col+1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw+1,col+1))
-				possiblemoves[raw+1][col+1] = true;
-		}
-		if(raw + 1 < 8 && col - 1 >= 0){
-			if(myBoard -> GetPiece(raw+1,col-1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw+1,col-1))
-				possiblemoves[raw+1][col-1] = true;
-		}
-	}
-	if(color == "black"){
-		if(moved==false){
-			//cout << raw << " " << col << endl;
-			if(myBoard -> Occupied(raw-1, col) == false){
-				//cout << "occupied" << endl;
-				possiblemoves[raw-1][col] = true;
-				if(myBoard -> Occupied(raw-2, col) == false){
-					possiblemoves[raw-2][col] = true;
-				}
-			}
-		}
-		else{
-			if(raw-1 >= 0){
-				if(myBoard -> Occupied(raw-1, col) == false) possiblemoves[raw-1][col] = true;
-			} 
-		}
-		if(raw - 1 >= 0 && col + 1 < 8){
-			if(myBoard -> GetPiece(raw-1,col+1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw-1,col+1))
-				possiblemoves[raw-1][col+1] = true;
-		}
-		if(raw - 1 >= 0 && col - 1 >= 0){
-			if(myBoard -> GetPiece(raw-1,col-1) -> GetColor() != this -> GetColor() && myBoard -> Occupied(raw-1,col-1))
-				possiblemoves[raw-1][col-1] = true;
-		}
-	}
-}
-
-void nullpiece::update(board * myBoard){
-	this -> reset();
-}
 
 #endif

@@ -80,62 +80,7 @@ board::~board(){
 	}
 }
 
-void board::Remember(){
-	delete last; //se last non è NULL
-	last = new board(this);
-}
-
-void board::Restore(){
-	for(int i = 0; i < 8; i++){
-		for(int j = 0; j < 8; j++){
-			delete thisboard[i][j];
-			thisboard[i][j] = this -> piecenew(last -> GetPiece(i,j));
-		}
-	}
-
-	whitegrave.clear();
-	blackgrave.clear();
-
-	for(int i = 0; i < (last -> whitegrave).size(); i++){
-		whitegrave.push_back(this -> piecenew((last -> whitegrave)[i]));
-	}
-	for(int i = 0; i < (last -> blackgrave).size(); i++){
-		blackgrave.push_back(this -> piecenew((last -> blackgrave)[i]));
-	}
-
-	whiteking = last -> Getwhiteking();
-	blackking = last -> Getblackking();
-
-	currentmove = last -> GetCurrentMoveInt();
-
-	whitechecked = last -> Getwhitechecked();
-	blackchecked = last -> Getblackchecked();
-
-	blackmated = last -> GetMated("black");
-	whitemated = last -> GetMated("white");
-
-	move = last -> GetMove();
-}
-
-int board::GetMove(){
-	return move;
-}
-
-vector<int> board::Getwhiteking(){
-	return whiteking;
-}
-
-bool board::Getwhitechecked(){
-	return whitechecked;
-}
-
-vector<int> board::Getblackking(){
-	return blackking;
-}
-
-bool board::Getblackchecked(){
-	return blackchecked;
-}
+//-------------------------------------------------------
 
 void board::Print(){
 	for(int i = 7; i >= 0; i--){
@@ -196,9 +141,20 @@ string board::Unicode(int type, string color){
 	}
 }
 
+//-------------------------------------------------------
+
 piece * board::GetPiece(int raw, int col){
 	return thisboard[raw][col];
 }
+
+piece * board::FindPiece(string pos){
+	vector<int> a = this -> Convert(pos);
+	int mycol = a[1];
+	int myraw = a[0];
+	return this -> GetPiece(myraw, mycol);
+}
+
+//-------------------------------------------------------
 
 vector<int> board::Convert(string pos){
 	char chcol = pos[0];
@@ -241,12 +197,275 @@ vector<int> board::Convert(string pos){
 	return a;
 }
 
-piece * board::FindPiece(string pos){
-	vector<int> a = this -> Convert(pos);
-	int mycol = a[1];
-	int myraw = a[0];
-	return this -> GetPiece(myraw, mycol);
+string board::ConvertPos(int raw, int col){
+	string a;
+	string b;
+	switch(col){
+		case 0:
+			a = "a";
+			break;
+		case 1:
+			a = "b";
+			break;
+		case 2:
+			a = "c";
+			break;
+		case 3:
+			a = "d";
+			break;
+		case 4:
+			a = "e";
+			break;
+		case 5:
+			a = "f";
+			break;
+		case 6:
+			a = "g";
+			break;
+		case 7:
+			a = "h";
+			break;
+	}
+	b = to_string(raw+1);
+	return a+b;
 }
+
+int board::ColCharToInt(char types){
+	switch(types){
+		case 'a':
+			return 0;
+			break;
+		case 'b':
+			return 1;
+			break;
+		case 'c':
+			return 2;
+			break;
+		case 'd':
+			return 3;
+			break;
+		case 'e':
+			return 4;
+			break;
+		case 'f':
+			return 5;
+			break;
+		case 'g':
+			return 6;
+			break;
+		case 'h':
+			return 7;
+			break;
+		default:
+			return 22;
+			break;
+	}
+}
+
+bool board::IsColoumn(char type){
+	bool col0 = type == 'a';
+	bool col1 = type == 'b';
+	bool col2 = type == 'c';
+	bool col3 = type == 'd';
+	bool col4 = type == 'e';
+	bool col5 = type == 'f';
+	bool col6 = type == 'g';
+	bool col7 = type == 'h';
+	return col0 || col1 || col2 || col3 || col4 || col5 || col6 || col7; 
+}
+
+int board::TypeStringToInt(char types){
+	string type;
+	type.push_back(types);
+	if(type == "R") return 1;
+	if(type == "N") return 2;
+	if(type == "B") return 3;
+	if(type == "Q") return 4;
+	if(type == "K") return 6;
+}
+
+//-------------------------------------------------------
+
+bool board::Occupied(int n_raw, int n_col){
+	if(thisboard[n_raw][n_col] -> GetType() != 0) return true;
+	else return false;
+}
+
+//-------------------------------------------------------
+
+string board::GetCurrentMove(){
+	string b = to_string(this -> GetMove());
+	if(currentmove == 0) return "Mossa al bianco, " + b + ": ";
+	else return "Mossa al nero, " + b + ": ";
+}
+
+int board::GetCurrentMoveInt(){
+	return currentmove;
+}
+
+int board::GetMove(){
+	return move;
+}
+
+void board::SetCurrentMoveInt(int a){
+	currentmove = a;
+}
+
+//-------------------------------------------------------
+
+vector<int> board::Getwhiteking(){
+	return whiteking;
+}
+
+vector<int> board::Getblackking(){
+	return blackking;
+}
+
+//-------------------------------------------------------
+
+bool board::Getwhitechecked(){
+	return whitechecked;
+}
+
+bool board::Getblackchecked(){
+	return blackchecked;
+}
+
+//-------------------------------------------------------
+
+void board::ResetChecks(){
+	whitechecked = false;
+	blackchecked = false;
+}
+
+void board::CheckChecks(string type){
+	//controlla scacchi
+	blackchecked = false;
+	whitechecked = false;
+
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 8; j++){
+			//cout <<  __LINE__ << " " << i << " " << j << endl;
+
+			piece * current = thisboard[i][j];
+			if(current -> GetColor() == "white" && current -> CanMove(blackking[0], blackking[1], this)){
+				blackchecked = true;
+				if(type != "justcheck") this -> CheckMate();
+			}
+			if(current -> GetColor() == "black" && current -> CanMove(whiteking[0], whiteking[1], this)){
+				whitechecked = true;
+				if(type != "justcheck") this -> CheckMate();
+			}
+		}
+	}
+
+	//cout << "checked " << whitechecked << " " << blackchecked << endl;
+}
+
+void board::CheckMate(){
+	if(currentmove == 0){ //white is getting mated
+		for(int i = 0; i < 8; i++){
+			for(int j = 0; j < 8; j++){
+				if(thisboard[i][j] -> GetColor() == "white"){
+					string start = this -> ConvertPos(i,j);
+					for(int h = 0; h < 8; h++){
+						for(int k = 0; k < 8; k++){
+							if(thisboard[i][j] -> CanMove(h,k, this)){
+								//prova a muovere e controlla i check
+								this -> Remember();
+								this -> ResetChecks();
+								this -> Move(start, this -> ConvertPos(h,k));
+								this -> CheckChecks("justcheck");
+								if(whitechecked == false){
+									whitemated = false;
+									this -> Restore();
+									return;
+								}
+								this -> Restore();
+								this -> CheckChecks("justcheck");
+							}
+						}
+					}
+				}
+			}
+		}
+		whitemated = true;
+	}
+	else if(currentmove == 1){ //black is getting mated
+		for(int i = 0; i < 8; i++){
+			for(int j = 0; j < 8; j++){
+				if(thisboard[i][j] -> GetColor() == "black"){
+					string start = this -> ConvertPos(i,j);
+					for(int h = 0; h < 8; h++){
+						for(int k = 0; k < 8; k++){
+							if(thisboard[i][j] -> CanMove(h,k, this)){
+								//prova a muovere e controlla i check
+								this -> Remember();
+								this -> ResetChecks();
+								this -> Move(start, this -> ConvertPos(h,k));
+								this -> CheckChecks("justcheck");
+								if(blackchecked == false){
+									blackmated = false;
+									this -> Restore();
+									return;
+								}
+								this -> Restore();
+								this -> CheckChecks("justcheck");
+							}
+						}
+					}
+				}
+			}
+		}
+		blackmated = true;
+	}
+}
+
+bool board::GetMated(string color){
+	if(color == "white") return whitemated;
+	if(color == "black") return blackmated;
+}
+
+//-------------------------------------------------------
+
+void board::Remember(){
+	delete last; //se last non è NULL
+	last = new board(this);
+}
+
+void board::Restore(){
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 8; j++){
+			delete thisboard[i][j];
+			thisboard[i][j] = this -> piecenew(last -> GetPiece(i,j));
+		}
+	}
+
+	whitegrave.clear();
+	blackgrave.clear();
+
+	for(int i = 0; i < (last -> whitegrave).size(); i++){
+		whitegrave.push_back(this -> piecenew((last -> whitegrave)[i]));
+	}
+	for(int i = 0; i < (last -> blackgrave).size(); i++){
+		blackgrave.push_back(this -> piecenew((last -> blackgrave)[i]));
+	}
+
+	whiteking = last -> Getwhiteking();
+	blackking = last -> Getblackking();
+
+	currentmove = last -> GetCurrentMoveInt();
+
+	whitechecked = last -> Getwhitechecked();
+	blackchecked = last -> Getblackchecked();
+
+	blackmated = last -> GetMated("black");
+	whitemated = last -> GetMated("white");
+
+	move = last -> GetMove();
+}
+
+//-------------------------------------------------------
 
 piece * board::piecenew(piece * oldPiece){
 	int n_raw = oldPiece -> GetRaw();
@@ -283,6 +502,38 @@ piece * board::piecenew(piece * oldPiece){
 	ritorno -> SetMoved(n_moved);
 	return ritorno;
 }
+
+void board::Promote(int colstop){
+	string type;
+	cout << "Promote in [Q,N,B,R]: ";
+	cin >> type;
+	piece * newpiece;
+	string color;
+	int raw;
+	if(currentmove == 0){
+		color = "white";
+		raw = 7;
+	}
+	else if(currentmove == 1){
+		color = "black";
+		raw = 0;
+	}
+	if(type == "Q")
+		newpiece = new queen(color,raw,colstop); 
+	else if(type == "N")
+		newpiece = new knight(color,raw,colstop); 
+	else if(type == "B")
+		newpiece = new bishop(color,raw,colstop); 
+	else if(type == "R")
+		newpiece = new rook(color,raw,colstop); 
+	else return;
+
+	delete thisboard[raw][colstop];
+	thisboard[raw][colstop] = newpiece;
+	return;
+}
+
+//-------------------------------------------------------
 
 void board::Move(string start, string stop){
 	//cout <<  __LINE__ << endl;
@@ -401,36 +652,6 @@ void board::Move(string start, string stop){
 	//cout <<  __LINE__ << endl;
 	this -> CheckChecks("justcheck");
 	//cout <<  __LINE__ << endl;
-}
-
-void board::Promote(int colstop){
-	string type;
-	cout << "Promote in [Q,N,B,R]: ";
-	cin >> type;
-	piece * newpiece;
-	string color;
-	int raw;
-	if(currentmove == 0){
-		color = "white";
-		raw = 7;
-	}
-	else if(currentmove == 1){
-		color = "black";
-		raw = 0;
-	}
-	if(type == "Q")
-		newpiece = new queen(color,raw,colstop); 
-	else if(type == "N")
-		newpiece = new knight(color,raw,colstop); 
-	else if(type == "B")
-		newpiece = new bishop(color,raw,colstop); 
-	else if(type == "R")
-		newpiece = new rook(color,raw,colstop); 
-	else return;
-
-	delete thisboard[raw][colstop];
-	thisboard[raw][colstop] = newpiece;
-	return;
 }
 
 void board::Move(string unic){
@@ -669,201 +890,4 @@ void board::Move(string unic){
 	}
 }
 
-bool board::IsColoumn(char type){
-	bool col0 = type == 'a';
-	bool col1 = type == 'b';
-	bool col2 = type == 'c';
-	bool col3 = type == 'd';
-	bool col4 = type == 'e';
-	bool col5 = type == 'f';
-	bool col6 = type == 'g';
-	bool col7 = type == 'h';
-	return col0 || col1 || col2 || col3 || col4 || col5 || col6 || col7; 
-}
-
-int board::ColCharToInt(char types){
-	switch(types){
-		case 'a':
-			return 0;
-			break;
-		case 'b':
-			return 1;
-			break;
-		case 'c':
-			return 2;
-			break;
-		case 'd':
-			return 3;
-			break;
-		case 'e':
-			return 4;
-			break;
-		case 'f':
-			return 5;
-			break;
-		case 'g':
-			return 6;
-			break;
-		case 'h':
-			return 7;
-			break;
-		default:
-			return 22;
-			break;
-	}
-}
-
-int board::TypeStringToInt(char types){
-	string type;
-	type.push_back(types);
-	if(type == "R") return 1;
-	if(type == "N") return 2;
-	if(type == "B") return 3;
-	if(type == "Q") return 4;
-	if(type == "K") return 6;
-}
-
-string board::ConvertPos(int raw, int col){
-	string a;
-	string b;
-	switch(col){
-		case 0:
-			a = "a";
-			break;
-		case 1:
-			a = "b";
-			break;
-		case 2:
-			a = "c";
-			break;
-		case 3:
-			a = "d";
-			break;
-		case 4:
-			a = "e";
-			break;
-		case 5:
-			a = "f";
-			break;
-		case 6:
-			a = "g";
-			break;
-		case 7:
-			a = "h";
-			break;
-	}
-	b = to_string(raw+1);
-	return a+b;
-}
-
-void board::SetCurrentMoveInt(int a){
-	currentmove = a;
-}
-
-bool board::Occupied(int n_raw, int n_col){
-	if(thisboard[n_raw][n_col] -> GetType() != 0) return true;
-	else return false;
-}
-
-string board::GetCurrentMove(){
-	string b = to_string(this -> GetMove());
-	if(currentmove == 0) return "Mossa al bianco, " + b + ": ";
-	else return "Mossa al nero, " + b + ": ";
-}
-
-int board::GetCurrentMoveInt(){
-	return currentmove;
-}
-
-void board::ResetChecks(){
-	whitechecked = false;
-	blackchecked = false;
-}
-
-void board::CheckChecks(string type){
-	//controlla scacchi
-	blackchecked = false;
-	whitechecked = false;
-
-	for(int i = 0; i < 8; i++){
-		for(int j = 0; j < 8; j++){
-			//cout <<  __LINE__ << " " << i << " " << j << endl;
-
-			piece * current = thisboard[i][j];
-			if(current -> GetColor() == "white" && current -> CanMove(blackking[0], blackking[1], this)){
-				blackchecked = true;
-				if(type != "justcheck") this -> CheckMate();
-			}
-			if(current -> GetColor() == "black" && current -> CanMove(whiteking[0], whiteking[1], this)){
-				whitechecked = true;
-				if(type != "justcheck") this -> CheckMate();
-			}
-		}
-	}
-
-	//cout << "checked " << whitechecked << " " << blackchecked << endl;
-}
-
-void board::CheckMate(){
-	if(currentmove == 0){ //white is getting mated
-		for(int i = 0; i < 8; i++){
-			for(int j = 0; j < 8; j++){
-				if(thisboard[i][j] -> GetColor() == "white"){
-					string start = this -> ConvertPos(i,j);
-					for(int h = 0; h < 8; h++){
-						for(int k = 0; k < 8; k++){
-							if(thisboard[i][j] -> CanMove(h,k, this)){
-								//prova a muovere e controlla i check
-								this -> Remember();
-								this -> ResetChecks();
-								this -> Move(start, this -> ConvertPos(h,k));
-								this -> CheckChecks("justcheck");
-								if(whitechecked == false){
-									whitemated = false;
-									this -> Restore();
-									return;
-								}
-								this -> Restore();
-								this -> CheckChecks("justcheck");
-							}
-						}
-					}
-				}
-			}
-		}
-		whitemated = true;
-	}
-	else if(currentmove == 1){ //black is getting mated
-		for(int i = 0; i < 8; i++){
-			for(int j = 0; j < 8; j++){
-				if(thisboard[i][j] -> GetColor() == "black"){
-					string start = this -> ConvertPos(i,j);
-					for(int h = 0; h < 8; h++){
-						for(int k = 0; k < 8; k++){
-							if(thisboard[i][j] -> CanMove(h,k, this)){
-								//prova a muovere e controlla i check
-								this -> Remember();
-								this -> ResetChecks();
-								this -> Move(start, this -> ConvertPos(h,k));
-								this -> CheckChecks("justcheck");
-								if(blackchecked == false){
-									blackmated = false;
-									this -> Restore();
-									return;
-								}
-								this -> Restore();
-								this -> CheckChecks("justcheck");
-							}
-						}
-					}
-				}
-			}
-		}
-		blackmated = true;
-	}
-}
-
-bool board::GetMated(string color){
-	if(color == "white") return whitemated;
-	if(color == "black") return blackmated;
-}
+//-------------------------------------------------------
