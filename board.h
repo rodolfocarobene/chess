@@ -47,6 +47,13 @@ board::board(board * oldBoard){
 		}
 	}
 
+	for(int i = 0; i < (oldBoard -> whitegrave).size(); i++){
+		whitegrave.push_back(this -> piecenew((oldBoard -> whitegrave)[i]));
+	}
+	for(int i = 0; i < (oldBoard -> blackgrave).size(); i++){
+		blackgrave.push_back(this -> piecenew((oldBoard -> blackgrave)[i]));
+	}
+
 	whiteking = oldBoard -> Getwhiteking();
 	blackking = oldBoard -> Getblackking();
 
@@ -81,6 +88,16 @@ void board::Restore(){
 			delete thisboard[i][j];
 			thisboard[i][j] = this -> piecenew(last -> GetPiece(i,j));
 		}
+	}
+
+	whitegrave.clear();
+	blackgrave.clear();
+
+	for(int i = 0; i < (last -> whitegrave).size(); i++){
+		whitegrave.push_back(this -> piecenew((last -> whitegrave)[i]));
+	}
+	for(int i = 0; i < (last -> blackgrave).size(); i++){
+		blackgrave.push_back(this -> piecenew((last -> blackgrave)[i]));
 	}
 
 	whiteking = last -> Getwhiteking();
@@ -124,9 +141,25 @@ void board::Print(){
 		cout << "\n" << endl;
 	}
 	cout << "   a     b     c     d     e     f     g     h" << endl;
+
+	for(int i = 0; i < whitegrave.size(); i++){
+		int type = whitegrave[i] -> GetType();
+		cout << this -> Unicode(type, "white") << " ";
+	}
+	if(whitegrave.size() > 0) cout << endl;
+
+	for(int i = 0; i < blackgrave.size(); i++){
+		int type = blackgrave[i] -> GetType();
+		cout << this -> Unicode(type, "black") << " ";
+	}
+	if(blackgrave.size() > 0) cout << endl;
 }
 
 string board::Unicode(int type, string color){
+	if (INVERTED == false){
+		if(color == "black") color = "white";
+		else if (color == "white") color = "black";
+	}
 	if(type == 0) return " ";
 	if(type == 1){	//rook
 		if(color == "black") return "\u2656";
@@ -273,7 +306,6 @@ void board::Move(string start, string stop){
 					//cout <<  __LINE__ << endl;
 					if(fin_color == "white") whitegrave.push_back(final);
 					if(fin_color == "black") blackgrave.push_back(final);
-					delete thisboard[rawstop][colstop];
 					thisboard[rawstart][colstart] = new nullpiece(rawstart, colstart);
 					thisboard[rawstop][colstop] =  this -> piecenew(current);
 					thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);

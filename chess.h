@@ -5,6 +5,9 @@
 #include <vector>
 #include <iostream>
 
+#define INVERTED true	
+
+
 using namespace std;
 
 
@@ -53,8 +56,6 @@ class board{
 	private:
 		board * last;
 		piece * thisboard [8][8];
-		vector<piece*> whitegrave;
-		vector<piece*> blackgrave;
 		vector<int> whiteking;
 		bool whitechecked;
 		bool whitemated;
@@ -66,6 +67,8 @@ class board{
 		board();
 		board(board * oldBoard);
 		~board();
+		vector<piece*> whitegrave;
+		vector<piece*> blackgrave;
 		void Print();
 		piece * GetPiece(int raw, int col);
 		piece * FindPiece(string pos);
