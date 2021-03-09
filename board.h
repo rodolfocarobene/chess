@@ -616,6 +616,10 @@ void board::Move(string unic){
 			}
 		}
 	}	
+	if(unic == "resign"){
+		if(currentmove == 0) whitemated = true;
+		else if (currentmove == 1) blackmated = true;
+	}
 }
 
 bool board::IsColoumn(char type){
