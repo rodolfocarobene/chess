@@ -63,6 +63,7 @@ class board{
 		bool blackchecked;
 		bool blackmated;
 		int currentmove;
+		int move;
 	public:
 		board();
 		board(board * oldBoard);
@@ -96,6 +97,7 @@ class board{
 		bool GetMated(string color);
 		void CheckMate();
 		void Promote(int colstop);
+		int GetMove();
 };
 
 

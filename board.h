@@ -38,6 +38,7 @@ board::board(){
 	blackchecked = false;
 
 	currentmove = 0;
+	move = 1;
 }
 
 board::board(board * oldBoard){
@@ -67,6 +68,8 @@ board::board(board * oldBoard){
 
 	blackmated = oldBoard -> GetMated("black");
 	whitemated = oldBoard -> GetMated("white");
+
+	move = oldBoard -> GetMove();
 }
 
 board::~board(){
@@ -110,6 +113,12 @@ void board::Restore(){
 
 	blackmated = last -> GetMated("black");
 	whitemated = last -> GetMated("white");
+
+	move = last -> GetMove();
+}
+
+int board::GetMove(){
+	return move;
 }
 
 vector<int> board::Getwhiteking(){
@@ -351,8 +360,14 @@ void board::Move(string start, string stop){
 		}
 
 		//cambia la mossa corrente
-		if(currentmove == 0 && moved == true) currentmove = 1;
-		else if(currentmove == 1 && moved == true) currentmove = 0;
+		if(currentmove == 0 && moved == true){
+			currentmove = 1;
+		//	move++;
+		}
+		else if(currentmove == 1 && moved == true){
+			currentmove = 0;
+			move++;
+		}
 
 	}
 	else if(whitechecked == true){
@@ -751,8 +766,9 @@ bool board::Occupied(int n_raw, int n_col){
 }
 
 string board::GetCurrentMove(){
-	if(currentmove == 0) return "Mossa al bianco: ";
-	else return "Mossa al nero: ";
+	string b = to_string(this -> GetMove());
+	if(currentmove == 0) return "Mossa al bianco, " + b + ": ";
+	else return "Mossa al nero, " + b + ": ";
 }
 
 int board::GetCurrentMoveInt(){
