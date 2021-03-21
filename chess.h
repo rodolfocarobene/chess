@@ -127,6 +127,9 @@ class piece{
 		bool CanMove(int n_raw, int n_col, board * myBoard);	//can this piece move to pos in this board?
 
 		void Print();									//print some info (for debug use)
+
+		virtual bool GetEnpassant(){};
+		virtual void SetEnpassant(bool newen){};
 };
 
 class nullpiece : public piece{
@@ -160,9 +163,12 @@ class queen : public piece{
 };
 
 class pawn : public piece{
+	bool enpassant;														//if a pawn double moves forward enpassant is true for a turn
 	public:
 		pawn(string colore, int riga, int colonna);
 		void update(board * myBoard);
+		bool GetEnpassant();
+		void SetEnpassant(bool newen);
 };
 
 class king : public piece{

@@ -56,6 +56,8 @@ pawn::pawn(string colore, int riga, int colonna){
 	type = 5;
 	alive = true;
 	moved = false;
+
+	enpassant = false;
 }
 
 king::king(string colore, int riga, int colonna){
@@ -422,6 +424,14 @@ string piece::GetColor(){
 
 int piece::GetType(){
 	return type;
+}
+
+bool pawn::GetEnpassant(){
+	return enpassant;
+}
+
+void pawn::SetEnpassant(bool newen){
+	enpassant = newen;
 }
 
 //---------------------------------------------------------

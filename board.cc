@@ -534,6 +534,11 @@ piece * board::piecenew(piece * oldPiece){
 	}
 	ritorno -> SetAlive(n_alive);
 	ritorno -> SetMoved(n_moved);
+
+	if(n_type == 5){
+		ritorno -> SetEnpassant(oldPiece -> GetEnpassant());
+	}
+
 	return ritorno;
 }
 
@@ -637,12 +642,26 @@ void board::Move(string start, string stop){
 	//cout <<  __LINE__ << endl;
 	bool ispawn = thisboard[rawstop][colstop] -> GetType() == 5;
 	bool arrived = (rawstop == 7 && currentmove == 0) || (rawstop == 0 && currentmove == 1);
+	bool doublemove = abs(rawstop - rawstart) == 2;
 
 	//cout <<  __LINE__ << endl;
 	if(ispawn && arrived){
 		this -> Promote(colstop);
 	}
 
+	if(moved == true){									//la mossaa è stata fatta, resetta gli enpassant
+		for(int i = 0; i < 8; i ++){
+			for(int j = 0; j < 8; j++){
+				if(thisboard[i][j] -> GetType() == 5){
+					thisboard[i][j] -> SetEnpassant(false);
+				}
+			}
+		}
+	}
+
+	if(moved == true && ispawn && doublemove){			//se la mossa è valida registra l'enpassant
+		thisboard[rawstop][colstop] -> SetEnpassant(true);
+	}
 		
 	
 	this -> LookForChecks();
@@ -668,6 +687,8 @@ void board::Move(string start, string stop){
 		currentmove = 0;
 		move++;
 	}
+
+
 
 }
 
@@ -730,6 +751,60 @@ void board::Move(string unic){
 		int rawstop = vstop[0];
 		int colstop = vstop[1];
 		
+		//funzione per l'enpassant
+		if(this -> Occupied(rawstop,colstop) == false ){
+			if(currentmove == 0 && thisboard[rawstop - 1][colstop] -> GetType() == 5){
+				bool enpassantvalid = thisboard[rawstop - 1][colstop] -> GetEnpassant();
+				if(enpassantvalid){
+					bool ispawn = thisboard[rawstop - 1][col] -> GetType() == 5;
+					bool iswhite = thisboard[rawstop - 1][col] -> GetColor() == "white";
+					if(ispawn && iswhite){
+						this -> Remember();
+
+						blackgrave.push_back(thisboard[rawstop - 1][colstop]);
+						thisboard[rawstop][colstop] =  this -> piecenew(thisboard[rawstop - 1][col]);
+						thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);
+						thisboard[rawstop - 1][col] = new nullpiece(rawstop - 1, col);
+						thisboard[rawstop - 1][colstop] = new nullpiece(rawstop - 1, colstop);
+
+						this -> LookForChecks();
+						if(whitechecked){
+							this -> Restore();
+							this -> ResetChecks();
+							this -> LookForChecks();
+							return;
+						}
+					}
+				}
+			}
+			else if (thisboard[rawstop + 1][colstop] -> GetType() == 5){
+				bool enpassantvalid = thisboard[rawstop + 1][colstop] -> GetEnpassant();
+				if(enpassantvalid){
+					bool ispawn = thisboard[rawstop + 1][col] -> GetType() == 5;
+					bool isblack = thisboard[rawstop + 1][col] -> GetColor() == "black";
+					if(ispawn && isblack){
+						this -> Remember();
+
+						whitegrave.push_back(thisboard[rawstop + 1][colstop]);
+						thisboard[rawstop][colstop] =  this -> piecenew(thisboard[rawstop + 1][col]);
+						thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);
+						thisboard[rawstop + 1][col] = new nullpiece(rawstop + 1, col);
+						thisboard[rawstop + 1][colstop] = new nullpiece(rawstop + 1, colstop);
+
+						this -> LookForChecks();
+						if(blackchecked){
+							this -> Restore();
+							this -> ResetChecks();
+							this -> LookForChecks();
+							return;
+						}
+					}
+				}
+			}
+		}
+
+
+
 		for(int j = 0; j < 8; j++){
 			bool controlmove = thisboard[j][col] -> CanMove(rawstop,colstop, this);
 			int controlpiece = thisboard[j][col] -> GetType();
