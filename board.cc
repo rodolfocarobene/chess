@@ -570,122 +570,105 @@ void board::Promote(int colstop){
 //-------------------------------------------------------
 
 void board::Move(string start, string stop){
-	//cout <<  __LINE__ << endl;
-	board * myBoard = this;
-	if(whitechecked == false && blackchecked == false){
-		vector<int> vstart = this -> Convert(start);
-		int rawstart = vstart[0];
-		int colstart = vstart[1];
-		vector<int> vstop = this -> Convert(stop);
-		int rawstop = vstop[0];
-		int colstop = vstop[1];
+	this -> Remember();
 
-		piece * current = myBoard -> GetPiece(rawstart,colstart);
-		string curr_color = current -> GetColor();
-		piece * final = myBoard -> GetPiece(rawstop,colstop);
-		string fin_color = final -> GetColor();
+	vector<int> vstart = this -> Convert(start);
+	int rawstart = vstart[0];
+	int colstart = vstart[1];
+	vector<int> vstop = this -> Convert(stop);
+	int rawstop = vstop[0];
+	int colstop = vstop[1];
 
-		//cout << "currentmove = " << currentmove << " currcolor: " << curr_color << endl;
+	piece * current = this -> GetPiece(rawstart,colstart);
+	string curr_color = current -> GetColor();
+	piece * final = this -> GetPiece(rawstop,colstop);
+	string fin_color = final -> GetColor();
 
-		//controllo che sia il turno del giocatore giusto
-		if(currentmove == 0 && curr_color == "black") return;
-		if(currentmove == 1 && curr_color == "white") return;
+	//cout << "currentmove = " << currentmove << " currcolor: " << curr_color << endl;
 
-		bool moved = false;
+	//controllo che sia il turno del giocatore giusto
+	if(currentmove == 0 && curr_color == "black") return;
+	if(currentmove == 1 && curr_color == "white") return;
 
-		//muovi, se possibile
-		if(current -> CanMove(rawstop,colstop, myBoard)){
-			if(final -> GetType() != 0){
-				if(curr_color != fin_color){
-					//cout <<  __LINE__ << endl;
-					if(fin_color == "white") whitegrave.push_back(final);
-					if(fin_color == "black") blackgrave.push_back(final);
-					thisboard[rawstart][colstart] = new nullpiece(rawstart, colstart);
-					thisboard[rawstop][colstop] =  this -> piecenew(current);
-					thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);
+	bool moved = false;
+
+	//muovi, se possibile
+	if(current -> CanMove(rawstop,colstop, this)){
+		if(final -> GetType() != 0){
+			if(curr_color != fin_color){
+				//cout <<  __LINE__ << endl;
+				if(fin_color == "white") whitegrave.push_back(final);
+				if(fin_color == "black") blackgrave.push_back(final);
+				thisboard[rawstart][colstart] = new nullpiece(rawstart, colstart);
+				thisboard[rawstop][colstop] =  this -> piecenew(current);
+				thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);
 
 					
-				}
-				else{
-					//errore
-				}
 			}
 			else{
-				//cout <<  __LINE__ << endl;
-				piece * temp_a = thisboard[rawstop][colstop];
-				thisboard[rawstop][colstop] = this -> piecenew(current);
-				thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);
-				thisboard[rawstart][colstart] = this -> piecenew(temp_a);
-				thisboard[rawstart][colstart] -> ChangePos(rawstart, colstart);
-				delete temp_a;
+				//errore
 			}
-			if(current -> GetType() == 6){
-				if(curr_color == "white"){
-					whiteking[0] = rawstop;
-					whiteking[1] = colstop;
-				}
-				else{
-					blackking[0] = rawstop;
-					blackking[1] = colstop;
-				}
-			}
-			moved = true;
 		}
 		else{
-			//errore
+			//cout <<  __LINE__ << endl;
+			piece * temp_a = thisboard[rawstop][colstop];
+			thisboard[rawstop][colstop] = this -> piecenew(current);
+			thisboard[rawstop][colstop] -> ChangePos(rawstop, colstop);
+			thisboard[rawstart][colstart] = this -> piecenew(temp_a);
+			thisboard[rawstart][colstart] -> ChangePos(rawstart, colstart);
+			delete temp_a;
 		}
-
-		//cout <<  __LINE__ << endl;
-		bool ispawn = thisboard[rawstop][colstop] -> GetType() == 5;
-		bool arrived = (rawstop == 7 && currentmove == 0) || (rawstop == 0 && currentmove == 1);
-
-		//cout <<  __LINE__ << endl;
-		if(ispawn && arrived){
-			this -> Promote(colstop);
+		if(current -> GetType() == 6){
+			if(curr_color == "white"){
+				whiteking[0] = rawstop;
+				whiteking[1] = colstop;
+			}
+			else{
+				blackking[0] = rawstop;
+				blackking[1] = colstop;
+			}
 		}
-
-		//cambia la mossa corrente
-		if(currentmove == 0 && moved == true){
-			currentmove = 1;
-		//	move++;
-		}
-		else if(currentmove == 1 && moved == true){
-			currentmove = 0;
-			move++;
-		}
-
+		moved = true;
 	}
-	else if(whitechecked == true){
-		this -> Remember();
-
-		this -> ResetChecks();
-		this -> Move(start,stop);
-		this -> LookForChecks();
-		if(whitechecked == true){
-			//restore last
-			this -> Restore();
-			this -> ResetChecks();
-			this -> LookForChecks();
-			return;
-		}
+	else{
+		//errore
 	}
-	else if(blackchecked == true){
-		this -> Remember();
 
-		this -> ResetChecks();
-		this -> Move(start,stop);
-		this -> LookForChecks();
-		if(blackchecked == true){
-			//restore last
-			this -> Restore();	
-			this -> ResetChecks();
-			this -> LookForChecks();
-			return;
-		}
-	}
 	//cout <<  __LINE__ << endl;
+	bool ispawn = thisboard[rawstop][colstop] -> GetType() == 5;
+	bool arrived = (rawstop == 7 && currentmove == 0) || (rawstop == 0 && currentmove == 1);
+
+	//cout <<  __LINE__ << endl;
+	if(ispawn && arrived){
+		this -> Promote(colstop);
+	}
+
+		
+	
 	this -> LookForChecks();
-	//cout <<  __LINE__ << endl;
+	if(currentmove == 0 && whitechecked){
+		this -> Restore();
+		this -> ResetChecks();
+		this -> LookForChecks();
+		return;
+	}
+	if(currentmove == 1 && blackchecked){
+		this -> Restore();
+		this -> ResetChecks();
+		this -> LookForChecks();
+		return;
+	}
+
+	//cambia la mossa corrente
+	if(currentmove == 0 && moved == true){
+		currentmove = 1;
+	//	move++;
+	}
+	else if(currentmove == 1 && moved == true){
+		currentmove = 0;
+		move++;
+	}
+
 }
 
 void board::Move(string unic){
