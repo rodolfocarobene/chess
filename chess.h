@@ -8,6 +8,7 @@
 #define INVERTED true									//if terminal background is black set this to true
 														//it switches color in print function for right visualisation
 
+#define ICONS false										//does the terminal support unicode chars?
 
 using namespace std;
 
@@ -74,7 +75,8 @@ class board{
 		bool Getblackchecked();							//is black checked?
 
 		void ResetChecks();								//putss both checked bool to false
-		void CheckChecks(string type = "total");		//checks for checks (with justcheck) or for mate too (with total)
+		void LookForChecks();
+		void LookForMate();
 		void CheckMate();								//checks for mates
 		bool GetMated(string color);					//is color mated?
 
@@ -173,7 +175,7 @@ class king : public piece{
 //Game Function. Obv not really of the library, but useful
 //----------------------------------------------------------------
 
-void StartGame(){
+inline void StartGame(){
 	board * currentgame= new board();
 
 	currentgame -> Print();
@@ -196,9 +198,5 @@ void StartGame(){
 	}
 	delete currentgame;
 }
-
-
-#include "board.h"
-#include "piece.h"
 
 #endif

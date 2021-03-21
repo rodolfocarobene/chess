@@ -1,3 +1,5 @@
+#include "chess.h"
+
 board::board(){
 
 	thisboard[0][0] = new rook("white",0,0);
@@ -94,7 +96,8 @@ void board::Print(){
 		}
 		cout << "\n" << endl;
 	}
-	cout << "   a     b     c     d     e     f     g     h" << endl;
+	if(ICONS) cout << "   a     b     c     d     e     f     g     h" << endl;
+	else cout << "     a        b        c        d        e        f        g       h" << endl;
 
 	for(int i = 0; i < whitegrave.size(); i++){
 		int type = whitegrave[i] -> GetType();
@@ -110,34 +113,49 @@ void board::Print(){
 }
 
 string board::Unicode(int type, string color){
-	if (INVERTED == false){
-		if(color == "black") color = "white";
-		else if (color == "white") color = "black";
+	if(ICONS){
+		if (INVERTED == false){
+			if(color == "black") color = "white";
+			else if (color == "white") color = "black";
+		}
+		if(type == 0) return " ";
+		if(type == 1){	//rook
+			if(color == "black") return "\u2656";
+			if(color == "white") return "\u265C";
+		}
+		if(type == 2){	//knight
+			if(color == "black") return "\u2658";
+			if(color == "white") return "\u265E";
+		}
+		if(type == 3){	//bishop
+			if(color == "black") return "\u2657";
+			if(color == "white") return "\u265D";
+		}
+		if(type == 4){	//queen
+			if(color == "black") return "\u2655";
+			if(color == "white") return "\u265B";
+		}
+		if(type == 5){	//pawn
+			if(color == "black") return "\u2659";
+			if(color == "white") return "\u265F";
+		}
+		if(type == 6){	//king
+			if(color == "black") return "\u2654";
+			if(color == "white") return "\u265A";
+		}
 	}
-	if(type == 0) return " ";
-	if(type == 1){	//rook
-		if(color == "black") return "\u2656";
-		if(color == "white") return "\u265C";
-	}
-	if(type == 2){	//knight
-		if(color == "black") return "\u2658";
-		if(color == "white") return "\u265E";
-	}
-	if(type == 3){	//bishop
-		if(color == "black") return "\u2657";
-		if(color == "white") return "\u265D";
-	}
-	if(type == 4){	//queen
-		if(color == "black") return "\u2655";
-		if(color == "white") return "\u265B";
-	}
-	if(type == 5){	//pawn
-		if(color == "black") return "\u2659";
-		if(color == "white") return "\u265F";
-	}
-	if(type == 6){	//king
-		if(color == "black") return "\u2654";
-		if(color == "white") return "\u265A";
+	else{
+		string result;
+		if(type == 0) return "    ";
+		if(type == 1) result = "R";
+		if(type == 2) result = "N";
+		if(type == 3) result = "B";
+		if(type == 4) result = "Q";
+		if(type == 5) result = "p";
+		if(type == 6) result = "K";
+
+		if(color == "black") return result + "(b)";
+		if(color == "white") return result + "(w)";
 	}
 }
 
@@ -338,8 +356,7 @@ void board::ResetChecks(){
 	blackchecked = false;
 }
 
-void board::CheckChecks(string type){
-	//controlla scacchi
+void board::LookForChecks(){
 	blackchecked = false;
 	whitechecked = false;
 
@@ -350,16 +367,33 @@ void board::CheckChecks(string type){
 			piece * current = thisboard[i][j];
 			if(current -> GetColor() == "white" && current -> CanMove(blackking[0], blackking[1], this)){
 				blackchecked = true;
-				if(type != "justcheck") this -> CheckMate();
 			}
 			if(current -> GetColor() == "black" && current -> CanMove(whiteking[0], whiteking[1], this)){
 				whitechecked = true;
-				if(type != "justcheck") this -> CheckMate();
 			}
 		}
 	}
+}
 
-	//cout << "checked " << whitechecked << " " << blackchecked << endl;
+void board::LookForMate(){
+	blackchecked = false;
+	whitechecked = false;
+
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 8; j++){
+			//cout <<  __LINE__ << " " << i << " " << j << endl;
+
+			piece * current = thisboard[i][j];
+			if(current -> GetColor() == "white" && current -> CanMove(blackking[0], blackking[1], this)){
+				blackchecked = true;
+				this -> CheckMate();
+			}
+			if(current -> GetColor() == "black" && current -> CanMove(whiteking[0], whiteking[1], this)){
+				whitechecked = true;
+				this -> CheckMate();
+			}
+		}
+	}
 }
 
 void board::CheckMate(){
@@ -375,14 +409,14 @@ void board::CheckMate(){
 								this -> Remember();
 								this -> ResetChecks();
 								this -> Move(start, this -> ConvertPos(h,k));
-								this -> CheckChecks("justcheck");
+								this -> LookForChecks();
 								if(whitechecked == false){
 									whitemated = false;
 									this -> Restore();
 									return;
 								}
 								this -> Restore();
-								this -> CheckChecks("justcheck");
+								this -> LookForChecks();
 							}
 						}
 					}
@@ -403,14 +437,14 @@ void board::CheckMate(){
 								this -> Remember();
 								this -> ResetChecks();
 								this -> Move(start, this -> ConvertPos(h,k));
-								this -> CheckChecks("justcheck");
+								this -> LookForChecks();
 								if(blackchecked == false){
 									blackmated = false;
 									this -> Restore();
 									return;
 								}
 								this -> Restore();
-								this -> CheckChecks("justcheck");
+								this -> LookForChecks();
 							}
 						}
 					}
@@ -626,12 +660,12 @@ void board::Move(string start, string stop){
 
 		this -> ResetChecks();
 		this -> Move(start,stop);
-		this -> CheckChecks("justcheck");
+		this -> LookForChecks();
 		if(whitechecked == true){
 			//restore last
 			this -> Restore();
 			this -> ResetChecks();
-			this -> CheckChecks("justcheck");
+			this -> LookForChecks();
 			return;
 		}
 	}
@@ -640,17 +674,17 @@ void board::Move(string start, string stop){
 
 		this -> ResetChecks();
 		this -> Move(start,stop);
-		this -> CheckChecks("justcheck");
+		this -> LookForChecks();
 		if(blackchecked == true){
 			//restore last
 			this -> Restore();	
 			this -> ResetChecks();
-			this -> CheckChecks("justcheck");
+			this -> LookForChecks();
 			return;
 		}
 	}
 	//cout <<  __LINE__ << endl;
-	this -> CheckChecks("justcheck");
+	this -> LookForChecks();
 	//cout <<  __LINE__ << endl;
 }
 
@@ -672,7 +706,7 @@ void board::Move(string unic){
 				bool rightcolor = iswhite || isblack;
 				if(controlmove && controlpiece == 5 && justmove && rightcolor){
 					this -> Move(this->ConvertPos(i,j),unic);
-					this -> CheckChecks();
+					this -> LookForMate();
 					return;
 				}
 			}
@@ -697,7 +731,7 @@ void board::Move(string unic){
 				bool rightcolor = iswhite || isblack;
 				if(controlmove && controlpiece == type && occupied == false && rightcolor){
 					this -> Move(this->ConvertPos(i,j),pos);
-					this -> CheckChecks();
+					this -> LookForMate();
 					return;
 				}
 			}
@@ -722,7 +756,7 @@ void board::Move(string unic){
 			bool rightcolor = iswhite || isblack;
 			if(controlmove && controlpiece == 5 && occupied == true && rightcolor){
 				this -> Move(this->ConvertPos(j,col),pos);
-				this -> CheckChecks();
+				this -> LookForMate();
 				return;
 			}
 		
@@ -748,7 +782,7 @@ void board::Move(string unic){
 				bool rightcolor = iswhite || isblack;
 				if(controlmove && controlpiece == type && occupied == true && rightcolor){
 					this -> Move(this->ConvertPos(i,j),pos);
-					this -> CheckChecks();
+					this -> LookForMate();
 					return;
 				}
 			}
@@ -776,14 +810,14 @@ void board::Move(string unic){
 				whiteking[1] = 6;
 				currentmove = 1;
 
-				this -> CheckChecks("justcheck");
+				this -> LookForChecks();
 				if(whitechecked == true){
 					//restore last
 					this -> Restore();
 					this -> ResetChecks();
-					this -> CheckChecks("justcheck");
+					this -> LookForChecks();
 				}
-				this -> CheckChecks();
+				this -> LookForMate();
 				return;
 			}
 		}
@@ -808,12 +842,12 @@ void board::Move(string unic){
 				blackking[1] = 6;
 				currentmove = 0;
 
-				this -> CheckChecks();
+				this -> LookForMate();
 				if(blackchecked == true){
 					//restore last
 					this -> Restore();
 					this -> ResetChecks();
-					this -> CheckChecks();
+					this -> LookForMate();
 				}
 				return;
 			}
@@ -841,14 +875,14 @@ void board::Move(string unic){
 				whiteking[1] = 2;
 				currentmove = 1;
 
-				this -> CheckChecks("justcheck");
+				this -> LookForChecks();
 				if(whitechecked == true){
 					//restore last
 					this -> Restore();
 					this -> ResetChecks();
-					this -> CheckChecks("justcheck");
+					this -> LookForChecks();
 				}
-				this -> CheckChecks();
+				this -> LookForMate();
 				return;
 			}
 		}
@@ -873,12 +907,12 @@ void board::Move(string unic){
 				blackking[1] = 2;
 				currentmove = 0;
 
-				this -> CheckChecks();
+				this -> LookForMate();
 				if(blackchecked == true){
 					//restore last
 					this -> Restore();
 					this -> ResetChecks();
-					this -> CheckChecks();
+					this -> LookForMate();
 				}
 				return;
 			}
