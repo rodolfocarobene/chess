@@ -15,15 +15,15 @@
 ## Idee per un'interfaccia grafica
 
 * Conoco processing, ma è in java... non ho tanta voglia di convertire tutto, ci sono alternative?
-** QT
-** libxd
+	* QT
+	* libxd
 
 
 ## Idee per una semplice IA
 
 * Il computer dovrebbe saper valutare una posizione:
-** Valore assoluto dei pezzi
-** Valore della posizione di un pezzo
+	* Valore assoluto dei pezzi
+	* Valore della posizione di un pezzo
 * Una IA può andare in profondità simulando tutte le possibilità e scegliendo la migliore
-** Quanto a fondo può andare?
-** Ha senso implementare questa parte in programmazione dinamica per risparmiare tempo?
+	* Quanto a fondo può andare?
+	* Ha senso implementare questa parte in programmazione dinamica per risparmiare tempo?
