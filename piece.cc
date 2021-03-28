@@ -436,11 +436,11 @@ void pawn::SetEnpassant(bool newen){
 
 //---------------------------------------------------------
 
-bool piece::SetAlive(bool a){
+void piece::SetAlive(bool a){
 	alive = a;
 }
 
-bool piece::SetMoved(bool a){
+void piece::SetMoved(bool a){
 	moved = a;
 }
 

@@ -4,11 +4,16 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <memory>
 
 #define INVERTED true									//if terminal background is black set this to true
 														//it switches color in print function for right visualisation
 
 #define ICONS false										//does the terminal support unicode chars?
+
+#define DEBUG false
 
 using namespace std;
 
@@ -33,6 +38,8 @@ class board{
 		vector<int> whiteking;							//position of white king
 		bool whitechecked;								//is white checked?
 		bool whitemated;								//is white mated?
+
+		bool draw;										//draw
 
 		vector<int> blackking;							//position of black king
 		bool blackchecked;								//is black checked?
@@ -79,6 +86,7 @@ class board{
 		void LookForMate();
 		void CheckMate();								//checks for mates
 		bool GetMated(string color);					//is color mated?
+		bool CheckDraw();
 
 		void Remember();								//saves current board in last
 		void Restore();									//restor board in last
@@ -116,8 +124,8 @@ class piece{
 		string GetColor();								//retun color
 		int GetType();									//retun # for type
 
-		bool SetAlive(bool a);							//set alive status
-		bool SetMoved(bool a);							//set moved status
+		void SetAlive(bool a);							//set alive status
+		void SetMoved(bool a);							//set moved status
 		void ChangePos(int n_raw, int n_col);			//change both raw and col
 
 		void reset();									//resets possiblemove matrix
@@ -128,7 +136,7 @@ class piece{
 
 		void Print();									//print some info (for debug use)
 
-		virtual bool GetEnpassant(){};
+		virtual bool GetEnpassant(){return false;}
 		virtual void SetEnpassant(bool newen){};
 };
 
@@ -205,8 +213,74 @@ inline void StartGame(){
 	delete currentgame;
 }
 
-inline bool ReadGame(string linea){
+inline bool ReadGame(string filename){				//read a file from https://www.ficsgames.org/download.html
+	ifstream infile(filename);
+	string line;
+	int countline = 0;
+	while(getline(infile, line)){
+		countline++;
+		//cout << "linea " << countline << endl;
+		if(line[0] == '1'){		//la linea corrisponde ad una partita
+			unique_ptr<board> currentgame (new board());
+			//currentgame -> Print();
+			
+			stringstream ss;
+			ss.str(line);
+			string move;
+			int i = 0;
 
+			while(getline(ss, move, ' ')){	//divide in move la linea
+			//	cout << move << endl;
+				if(move.find("resign") != string::npos) move = "resign";
+				else if(move.find("forfeit") != string::npos) move = "resign";
+				else if(move.find("draw") != string::npos) move = "draw";
+				else if(move.find("neither") != string::npos) move = "draw";
+				else if(move[0] == '{') move = "none";
+				//se i = 0 salta la mossa (1.)	
+				//se i = 1 o 2 muovi
+				if(i != 0 || move == "draw" || move == "resign"){
+					//se la mossa finisce con uno scacco terminerà con +/#, rimuovilo in quanto non supportato
+					if(move[move.length() - 1] == '#') move.pop_back();
+					if(move[move.length() - 1] == '+') move.pop_back();
+				//	cout << "Mossa: " << currentgame -> GetMove() << " " << move << "\n";
+					currentgame -> Move(move);
+				//	cout << move << endl;
+				//	currentgame -> Print();
+				}
+
+				if(i != 2) i++;
+				else i = 0;
+
+
+				int countmove;
+				if (currentgame -> GetCurrentMoveInt() == 0) countmove = currentgame -> GetMove() - 1;
+				else countmove = currentgame -> GetMove();
+
+
+				if(currentgame -> GetMated("white")){
+					cout << "Partita alla riga " << countline << " Nero vince alla mossa " << countmove << endl;
+					currentgame.reset();
+					break;
+				}
+				else if(currentgame -> GetMated("black")){
+					
+					cout << "Partita alla riga " << countline << " Bianco vince alla mossa " << countmove << endl;
+					currentgame.reset();
+					break;
+				}
+				else if(currentgame -> CheckDraw()){
+					cout << "Partita alla riga " << countline << " Patta alla mossa " << countmove << endl;
+					currentgame.reset();
+					break;					
+				}
+
+			}
+			
+		}
+	}
+
+	infile.close();
+	return true;
 }
 
 #endif

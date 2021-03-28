@@ -4,7 +4,8 @@
 
 int main(){
 		
-	StartGame();
+	//StartGame();
+	if(ReadGame("games.pgn")) std::cout << "yei";
 
 	return 0;
 }

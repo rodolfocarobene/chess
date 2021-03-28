@@ -38,13 +38,20 @@ board::board(){
 	blackking.push_back(4);
 
 	whitechecked = false;
+	whitemated = false;
 	blackchecked = false;
+	blackmated = false;
+
+	draw = false;
+	
+	last = NULL;
 
 	currentmove = 0;
 	move = 1;
 }
 
 board::board(board * oldBoard){
+	if(DEBUG)cout << __LINE__ << "\n";
 	for(int i = 0; i < 8; i++){
 		for(int j = 0; j < 8; j++){
 			thisboard[i][j] = this -> piecenew(oldBoard -> GetPiece(i,j));
@@ -72,7 +79,12 @@ board::board(board * oldBoard){
 	blackmated = oldBoard -> GetMated("black");
 	whitemated = oldBoard -> GetMated("white");
 
+	last = NULL;
+
+	draw = false;
+
 	move = oldBoard -> GetMove();
+	if(DEBUG)cout << __LINE__ << "\n";
 }
 
 board::~board(){
@@ -81,6 +93,8 @@ board::~board(){
 		for(int j = 0; j < 8; j++)
 			delete thisboard[i][j];
 	}
+	for(int i = 0; i < whitegrave.size(); i++) delete whitegrave[i];
+	for(int i = 0; i < blackgrave.size(); i++) delete blackgrave[i];
 }
 
 //-------------------------------------------------------
@@ -158,6 +172,8 @@ string board::Unicode(int type, string color){
 		if(color == "black") return result + "(b)";
 		if(color == "white") return result + "(w)";
 	}
+
+	return "errore"; //non si deve arrivare qui
 }
 
 //-------------------------------------------------------
@@ -301,6 +317,8 @@ int board::TypeStringToInt(char types){
 	if(type == "B") return 3;
 	if(type == "Q") return 4;
 	if(type == "K") return 6;
+
+	return 0; //errore, non si deve arrivare qui
 }
 
 //-------------------------------------------------------
@@ -459,13 +477,17 @@ void board::CheckMate(){
 bool board::GetMated(string color){
 	if(color == "white") return whitemated;
 	if(color == "black") return blackmated;
+
+	return false; //errore
 }
 
 //-------------------------------------------------------
 
 void board::Remember(){
-	delete last; //se last non è NULL
+	if(DEBUG)cout << __LINE__ << "\n";
+	if(last != NULL) delete last; //se last non è NULL
 	last = new board(this);
+	if(DEBUG)cout << __LINE__ << "\n";
 }
 
 void board::Restore(){
@@ -503,6 +525,7 @@ void board::Restore(){
 //-------------------------------------------------------
 
 piece * board::piecenew(piece * oldPiece){
+	if(DEBUG)cout << __LINE__ << "\n";
 	int n_raw = oldPiece -> GetRaw();
 	int n_col = oldPiece -> GetCol();
 	string n_color = oldPiece -> GetColor();
@@ -540,6 +563,7 @@ piece * board::piecenew(piece * oldPiece){
 		ritorno -> SetEnpassant(oldPiece -> GetEnpassant());
 	}
 
+	if(DEBUG)cout << __LINE__ << "\n";
 	return ritorno;
 }
 
@@ -576,7 +600,11 @@ void board::Promote(int colstop){
 //-------------------------------------------------------
 
 void board::Move(string start, string stop){
+
+	if(DEBUG)cout << __LINE__ << "\n";
 	this -> Remember();
+
+	if(DEBUG)cout << __LINE__ << "\n";
 
 	vector<int> vstart = this -> Convert(start);
 	int rawstart = vstart[0];
@@ -597,6 +625,7 @@ void board::Move(string start, string stop){
 	if(currentmove == 1 && curr_color == "white") return;
 
 	bool moved = false;
+	if(DEBUG)cout << __LINE__ << "\n";
 
 	//muovi, se possibile
 	if(current -> CanMove(rawstop,colstop, this)){
@@ -639,13 +668,13 @@ void board::Move(string start, string stop){
 	else{
 		//errore
 	}
+	if(DEBUG)cout << __LINE__ << "\n";
 
-	//cout <<  __LINE__ << endl;
 	bool ispawn = thisboard[rawstop][colstop] -> GetType() == 5;
 	bool arrived = (rawstop == 7 && currentmove == 0) || (rawstop == 0 && currentmove == 1);
 	bool doublemove = abs(rawstop - rawstart) == 2;
 
-	//cout <<  __LINE__ << endl;
+	if(DEBUG)cout << __LINE__ << "\n";
 	if(ispawn && arrived){
 		this -> Promote(colstop);
 	}
@@ -688,11 +717,14 @@ void board::Move(string start, string stop){
 		currentmove = 0;
 		move++;
 	}
+	if(DEBUG)cout << __LINE__ << "\n";
 }
 
 void board::Move(string unic){
 	//cout <<  __LINE__ << endl;
 	int length = unic.length();
+	if(unic == "none") return;
+	
 	if(length == 2){ //d4
 		vector<int> vstop = this -> Convert(unic);
 		int rawstop = vstop[0];
@@ -700,11 +732,15 @@ void board::Move(string unic){
 		//mossa di pedone
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
+				// cout << __LINE__ << endl;
 				bool controlmove = thisboard[i][j] -> CanMove(rawstop,colstop, this);
+				// cout << __LINE__ << endl;
 				int controlpiece = thisboard[i][j] -> GetType();
+				// cout << __LINE__ << endl;
 				bool justmove = colstop == j;
 				bool iswhite = currentmove == 0 && thisboard[i][j] -> GetColor() == "white";
 				bool isblack = currentmove == 1 && thisboard[i][j] -> GetColor() == "black";
+				// cout << __LINE__ << endl;
 				bool rightcolor = iswhite || isblack;
 				if(controlmove && controlpiece == 5 && justmove && rightcolor){
 					this -> Move(this->ConvertPos(i,j),unic);
@@ -714,7 +750,7 @@ void board::Move(string unic){
 			}
 		}
 	}
-	if(length == 3 && unic[0] != 'O'){ //Nd4
+	else if(length == 3 && unic[0] != 'O'){ //Nd4
 		char types = unic[0];
 		int type = this -> TypeStringToInt(types);
 		string pos;
@@ -739,7 +775,7 @@ void board::Move(string unic){
 			}
 		}
 	}
-	if(length == 4 && this -> IsColoumn(unic[0]) == true && unic[1] == 'x'){ //dxe3
+	else if(length == 4 && this -> IsColoumn(unic[0]) == true && unic[1] == 'x'){ //dxe3
 		char colchar = unic[0];
 		int col = this -> ColCharToInt(colchar);	//----------
 		string pos;
@@ -818,7 +854,7 @@ void board::Move(string unic){
 		
 		}
 	}
-	if(length == 4 && this -> IsColoumn(unic[0]) == false && unic[1] == 'x'){ //Nxe3
+	else if(length == 4 && this -> IsColoumn(unic[0]) == false && unic[1] == 'x'){ //Nxe3
 		char types = unic[0];
 		int type = this -> TypeStringToInt(types);
 		string pos;
@@ -844,7 +880,56 @@ void board::Move(string unic){
 			}
 		}
 	}
-	if(unic == "O-O"){
+	else if(length == 4 && this -> IsColoumn(unic[0]) == false && this -> IsColoumn(unic[1]) == true){
+		char types = unic[0];
+		int type = this -> TypeStringToInt(types);
+		string pos;
+		pos.push_back(unic[2]);
+		pos.push_back(unic[3]);
+		vector<int> vstop = this -> Convert(pos);
+		int rawstop = vstop[0];
+		int colstop = vstop[1];
+		int colstart = this -> ColCharToInt(unic[1]);
+		for(int i = 0; i < 8; i++){
+			bool controlmove = thisboard[i][colstart] -> CanMove(rawstop,colstop, this);
+			int controlpiece = thisboard[i][colstart] -> GetType();
+			bool occupied = this -> Occupied(rawstop,colstop);
+			bool iswhite = currentmove == 0 && thisboard[i][colstart] -> GetColor() == "white";
+			bool isblack = currentmove == 1 && thisboard[i][colstart] -> GetColor() == "black";
+			bool rightcolor = iswhite || isblack;
+			if(controlmove && controlpiece == type && occupied == false && rightcolor){
+				this -> Move(this->ConvertPos(i,colstart),pos);
+				this -> LookForMate();
+				return;
+			}
+		}
+	}
+	else if(length == 4 && this -> IsColoumn(unic[0]) == false && this -> IsColoumn(unic[1]) == false){
+		char types = unic[0];
+		int type = this -> TypeStringToInt(types);
+		string pos;
+		pos.push_back(unic[2]);
+		pos.push_back(unic[3]);
+		vector<int> vstop = this -> Convert(pos);
+		int rawstop = vstop[0];
+		int colstop = vstop[1];
+		int rawstart = unic[1] - '0';
+		rawstart--;
+		for(int i = 0; i < 8; i++){
+			bool controlmove = thisboard[rawstart][i] -> CanMove(rawstop,colstop, this);
+			int controlpiece = thisboard[rawstart][i] -> GetType();
+			bool occupied = this -> Occupied(rawstop,colstop);
+			bool iswhite = currentmove == 0 && thisboard[rawstart][i] -> GetColor() == "white";
+			bool isblack = currentmove == 1 && thisboard[rawstart][i] -> GetColor() == "black";
+			bool rightcolor = iswhite || isblack;
+			if(controlmove && controlpiece == type && occupied == false && rightcolor){
+				this -> Move(this->ConvertPos(rawstart,i),pos);
+				this -> LookForMate();
+				return;
+			}
+		}
+	}
+	else if(unic == "O-O"){
 		if(currentmove == 0){ //mossa al bianco
 			bool kingmoved = thisboard[0][4] -> GetMoved();
 			bool rookmoved = thisboard[0][7] -> GetMoved();
@@ -897,6 +982,7 @@ void board::Move(string unic){
 
 				blackking[1] = 6;
 				currentmove = 0;
+				move++;
 
 				this -> LookForMate();
 				if(blackchecked == true){
@@ -909,7 +995,7 @@ void board::Move(string unic){
 			}
 		}
 	}
-	if(unic == "O-O-O"){
+	else if(unic == "O-O-O"){
 		if(currentmove == 0){ //mossa al bianco
 			bool kingmoved = thisboard[0][4] -> GetMoved();
 			bool rookmoved = thisboard[0][0] -> GetMoved();
@@ -962,6 +1048,7 @@ void board::Move(string unic){
 
 				blackking[1] = 2;
 				currentmove = 0;
+				move++;
 
 				this -> LookForMate();
 				if(blackchecked == true){
@@ -974,10 +1061,19 @@ void board::Move(string unic){
 			}
 		}
 	}	
-	if(unic == "resign"){
+	else if(unic == "resign"){
 		if(currentmove == 0) whitemated = true;
 		else if (currentmove == 1) blackmated = true;
 	}
+	else if(unic == "draw") draw = true;
+	else return;
+}
+
+bool board::CheckDraw(){
+	if(draw == true) return true;
+	//se il materiale è insufficiente return true
+	return false;
+
 }
 
 //-------------------------------------------------------

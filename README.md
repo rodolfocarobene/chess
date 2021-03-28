@@ -2,15 +2,24 @@
 
 ## Problemi da risolvere 
 
+* Il parsing con la promozione (l'uguale) non è implementato
+* Non è possibile arrendersi nel proprio turno
+* Non è considerato il tempo
+* Non è possibile ruotare la scacchiera
 * Gli scacchi(matti) sono verificati controllando tutte le possibilità e tornando indietro -> grande utilizzo di memoria e poca efficienza
 * Nullpiece è comodo, ma ha senso?
-* Possibile presenza di bug, devo implementare una funzione di debug efficiente su un dataset di partite
+* Errore nel conteggio delle mosse (solved)
+* Non è contemplata una mossa come Nhe3 (Il secondo carattere definisce quale pezzo muovere) (solved)
+* Non sono contemplate patte né per accordo né per ripetizione o mancanza di materiale (partially solved)
+* Possibile presenza di bug, devo implementare una funzione di debug efficiente su un dataset di partite (done, bugs still present)
+	* https://www.ficsgames.org/download.html
 
 
 ## Futuri ampliamenti a breve termine
 
 * Importare una posizione da FEN
 * Importare una partita da PGN
+* Ruota scacchiera
 
 ## Idee per un'interfaccia grafica
 

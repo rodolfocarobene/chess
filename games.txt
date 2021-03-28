@@ -1,0 +1,21 @@
+
+[Event "FICS rated standard game"]
+[Site "FICS freechess.org"]
+[FICSGamesDBGameNo "490373455"]
+[White "exeComp"]
+[Black "Ruvarashe"]
+[WhiteElo "2717"]
+[BlackElo "1976"]
+[WhiteRD "0.0"]
+[BlackRD "0.0"]
+[WhiteIsComp "Yes"]
+[TimeControl "900+5"]
+[Date "2021.01.31"]
+[Time "23:25:00"]
+[WhiteClock "0:15:00.000"]
+[BlackClock "0:15:00.000"]
+[ECO "B92"]
+[PlyCount "25"]
+[Result "1-0"]
+
+1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Be2 e5 7. Nb3 Be7 8. O-O Be6 9. Be3 Nbd7 10. a4 O-O 11. a5 Rc8 12. Qd3 Qc7 13. Rfd1 {Black forfeits by disconnection} 1-0
