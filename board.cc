@@ -25,6 +25,7 @@ board::board(){
 		thisboard[6][i] = new pawn("black",6,i);		
 	}
 
+
 	for(int i = 0; i < 8; i++){
 		for(int j = 2; j < 6; j++){
 			thisboard[j][i] = new nullpiece(j,i);
@@ -687,9 +688,6 @@ void board::Move(string start, string stop){
 		currentmove = 0;
 		move++;
 	}
-
-
-
 }
 
 void board::Move(string unic){

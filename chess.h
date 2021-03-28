@@ -205,4 +205,8 @@ inline void StartGame(){
 	delete currentgame;
 }
 
+inline bool ReadGame(string linea){
+
+}
+
 #endif
