@@ -1,4 +1,4 @@
-#Libreria per il gioco degli Scacchi
+# Libreria per il gioco degli Scacchi
 
 ## Problemi da risolvere 
 
